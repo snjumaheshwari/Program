@@ -1,0 +1,13 @@
+An operating system is a program that acts as an interface between the user and the computer hardware and controls the execution of all kinds of programs.
+
+Following are some of important functions of an operating System.
+
+Memory Management]
+Processor Management
+Device Management
+File Management
+Security
+Control over system performance
+Job accounting
+Error detecting aids
+Coordination between other software and users

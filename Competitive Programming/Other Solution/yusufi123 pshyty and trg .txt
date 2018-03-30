@@ -1,0 +1,236 @@
+#include <bits/stdc++.h>
+using namespace std;
+ 
+long a[100000],b[100000],ans;
+ 
+typedef struct n{
+    long *arr,x,y,mid,n;
+    struct n *left,*right;
+}node;
+ 
+void merge(long c[], long d[], long e[], long q, long r){
+    long i = 0, j = 0, k = 0;
+    while(i < q && j < r){
+        if(d[i]<e[j])
+            c[k++] = e[j++];
+        else
+            c[k++] = d[i++];
+    }
+    while(i<q){
+        c[k++] = d[i++];
+    }
+    while(j<r){
+        c[k++] = e[j++];
+    }
+}
+ 
+long special(long a[], long len){
+    
+    /*for(long i = 0; i<len; i++)
+        cout<<a[i]<<" ";
+    cout<<"\n";*/
+    
+    for(long i = 0; i<len-2; i++){
+        ans = a[i+1]+a[i+2];
+    	if(ans>a[i]){
+    	    ans += a[i];
+    	    len = i+3;
+    	    break;
+    	}
+    	else
+    	    ans = 0;
+    }
+    //cout<<ans<<"\n";
+    return len;
+}
+ 
+node *create_tree(long low, long high){
+    node *temp = (node*)malloc(sizeof(node));
+    temp->x = low;
+    temp->y = high;
+    if(high < 0){
+        temp->arr = (long*)malloc(sizeof(long));
+        temp->n = 1;
+        temp->mid = -2;
+        temp->left = temp->right = NULL;
+        temp->arr[0] = a[low];
+        return temp;
+    }
+    if(low < 0){
+        temp->arr = (long*)malloc(sizeof(long));
+        temp->n = 1;
+        temp->mid = -2;
+        temp->left = temp->right = NULL;
+        temp->arr[0] = a[high];
+        return temp;
+    }
+    if(low == high){
+        temp->arr = (long*)malloc(sizeof(long));
+        temp->n = 1;
+        temp->mid = -2;
+        temp->left = temp->right = NULL;
+        temp->arr[0] = a[low];
+        return temp;
+    }
+    if(low+1 == high)
+        temp->mid = -2;
+    else
+        temp->mid = (low+high)/2;
+    temp->left = create_tree(low, temp->mid);
+    temp->right = create_tree((temp->mid)+1, high);
+    temp->n = high-low+1;
+    temp->arr = (long*)malloc(sizeof(long)*(temp->n));
+    merge(temp->arr, temp->left->arr, temp->right->arr, temp->left->n, temp->right->n);
+    if(temp->n > 3)
+        temp->n = special(temp->arr, temp->n);
+    return temp;
+}
+ 
+void inorder(node *root){
+    if(root == NULL)
+        return;
+    inorder(root->left);
+    for(long i = 0; i<root->n; i++)
+        printf("%ld ",root->arr[i]);
+    cout<<"\n";
+    inorder(root->right);
+}
+ 
+void update(node *root, long l, long r){
+    if(root->mid<0){
+        if(root->x == l && root->y == l){
+            root->arr[0] = r;
+            return;
+        }    
+        else if(root->x == l && root->y>=0)
+            update(root->left, l, r);
+        else if(root->x>=0 && root->y == l)
+            update(root->right, l, r);
+        else{
+            root->arr[0] = r;
+            return;
+        }
+    }
+    else{
+        if(l<=root->mid)
+            update(root->left, l, r);
+        else
+            update(root->right, l, r);
+    }
+    merge(root->arr, root->left->arr, root->right->arr, root->left->n, root->right->n);
+    root->n = root->left->n + root->right->n;
+    if(root->n > 3)
+        root->n = special(root->arr, root->n);
+    return;
+}
+ 
+long search(node *root, long len, long l, long r){
+    if(root->mid<0){
+        if(root->x>=0 && root->y>=0 && root->x != root->y){
+            if(l<=root->x && r>=root->y){
+                long *c = (long*)malloc(sizeof(long)*len);
+                for(long i = 0; i<len; i++)
+                    c[i] = b[i];
+                merge(b, c, root->arr, len, root->n);
+                len += root->n;
+                if(len>2)
+                    len = special(b, len);
+                return (len);
+            }
+            else if(r == root->x)
+                len = search(root->left, len, l, r);
+            else
+                len = search(root->right, len, l, r);
+        }    
+        else{
+            long *c = (long*)malloc(sizeof(long)*len);
+            for(long i = 0; i<len; i++){
+                c[i] = b[i];
+                //cout<<c[i]<<" ";
+            }
+            //cout<<"\n";
+            merge(b, c, root->arr, len, root->n);
+            len += root->n;
+            if(len>2)
+                len = special(b, len);
+            /*cout<<"aa = "<<root->arr[0]<<"\n";
+            cout<<"root->n = "<<root->n<<"\n";
+            cout<<"root->x = "<<root->x<<"\n";
+            cout<<"root->y = "<<root->y<<"\n";
+            for(long i = 0; i<len+root->n; i++)
+                cout<<b[i]<<" ";
+            cout<<"\n";*/
+            return (len);
+        }
+    }
+    else{
+        if(l<=root->x && r>=root->y){
+            long *c = (long*)malloc(sizeof(long)*len);
+            for(long i = 0; i<len; i++)
+                c[i] = b[i];
+            merge(b, c, root->arr, len, root->n);
+            len += root->n;
+            if(len>2)
+                len = special(b, len);
+            return (len);
+        }
+        else if(r<=root->mid)
+            len = search(root->left, len, l, r);
+        else if(l>root->mid)
+            len = search(root->right, len, l, r);
+        else{
+            len = search(root->left, len, l, r);
+            len = search(root->right, len, l, r);
+        }
+    }
+    return len;
+}
+ 
+int main() {
+	long n,q,t,l,r,len;
+	node *root;
+	bool flag;
+	scanf("%ld%ld",&n,&q);
+	for(long i = 0; i<n; i++)
+	    scanf("%ld",&a[i]);
+	
+	root = create_tree(0, n-1);
+	
+	//inorder(root);
+	//cout<<"\n";
+	
+	while(q--){
+	    scanf("%ld%ld%ld",&t,&l,&r);
+	    if(t == 1){
+	        update(root, l-1, r);
+            //inorder(root);
+	        //cout<<"\n";
+	    }
+	    else{
+	        if(r-l>1){
+	            ans = 0;
+	            len = search(root, 0, l-1, r-1);
+	            /*for(long i = 0; i<len; i++)
+	                cout<<b[i]<<" ";    
+	            cout<<"\n";
+    	        flag = false;
+    	        for(long i = len-3; i>=0; i--){
+    	            ans = b[i]+b[i+1];
+    	            if(ans>b[i+2]){
+    	                ans += b[i+2];
+    	                flag = true;
+    	                break;
+    	            }
+    	        }
+    	        if(flag == true)*/
+    	            printf("%ld\n",ans);
+    	        //else
+    	        //    printf("0\n");
+	        }
+	        else{
+	            printf("0\n");
+	        }
+	    }
+	}
+	return 0;
+} 

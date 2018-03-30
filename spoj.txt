@@ -1,0 +1,20 @@
+def fun(list):
+	n=len(list)
+	count=0
+	for i in range(len(list)-1):
+		print(list[i],list[i+1])
+		if(list[i]>list[i+1]):
+			#print(list[i],list[i+1])
+			k=i
+			k=k-count
+			list[k]=list[k]-1
+
+			list=list[:k+1]+[9]*(n-k-1)
+			#print(i)
+			return list
+		elif(list[i]==list[i+1]):
+			count+=1
+		else:
+			count=0
+
+	return list
